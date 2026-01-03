@@ -1,3 +1,5 @@
+import os
+import requests
 import streamlit as st
 import pandas as pd
 import joblib
@@ -7,18 +9,48 @@ from io import BytesIO
 st.set_page_config(page_title="Contract Clause Risk Classifier", layout="wide")
 st.title("📄 Construction Contract Clause Risk Classifier")
 
-@st.cache_resource
-def load_artifacts():
-    model = joblib.load("model/voting_model.pkl")
-    vectorizer = joblib.load("model/vectorizer.pkl")
-    return model, vectorizer
+MODEL_DIR = "model"
+MODEL_PATH = os.path.join(MODEL_DIR, "voting_model.pkl")
+VECT_PATH  = os.path.join(MODEL_DIR, "vectorizer.pkl")
 
-model, vectorizer = load_artifacts()
+MODEL_URL = "https://drive.google.com/file/d/1NEL16kC-510kwXh7TNXwj-vuI1rxtVBY"
+VECT_URL  = "https://drive.google.com/file/d/1YP30UYdR2YNt75FqJXeKnLPhKw55SbP2"
 
-uploaded = st.file_uploader("Excel dosyası yükle (.xlsx)", type=["xlsx"])
+def download_file(url, dest):
+    with st.spinner(f"Downloading {os.path.basename(dest)}..."):
+        r = requests.get(url, stream=True)
+        r.raise_for_status()
+        with open(dest, "wb") as f:
+            for chunk in r.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+if not os.path.exists(MODEL_PATH):
+    st.info("Model bulunamadı. İndiriliyor...")
+    download_file(MODEL_URL, MODEL_PATH)
+
+if not os.path.exists(VECT_PATH):
+    st.info("Vectorizer bulunamadı. İndiriliyor...")
+    download_file(VECT_URL, VECT_PATH)
+
+model = joblib.load(MODEL_PATH)
+vectorizer = joblib.load(VECT_PATH)
+
+
+uploaded = st.file_uploader(
+    "Excel, CSV veya TSV dosyası yükle",
+    type=["xlsx", "csv", "tsv"])
 
 if uploaded is not None:
-    df = pd.read_excel(uploaded)
+    filename = uploaded.name.lower()
+
+    if filename.endswith(".tsv"):
+        df = pd.read_csv(uploaded, sep="\t")
+    elif filename.endswith(".csv"):
+        df = pd.read_csv(uploaded)
+    else:
+        df = pd.read_excel(uploaded)
     st.subheader("📄 Yüklenen veri")
     st.dataframe(df, use_container_width=True)
 
