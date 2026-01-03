@@ -13,8 +13,8 @@ MODEL_DIR = "model"
 MODEL_PATH = os.path.join(MODEL_DIR, "voting_model.pkl")
 VECT_PATH  = os.path.join(MODEL_DIR, "vectorizer.pkl")
 
-MODEL_URL = "https://drive.google.com/file/d/1NEL16kC-510kwXh7TNXwj-vuI1rxtVBY"
-VECT_URL  = "https://drive.google.com/file/d/1YP30UYdR2YNt75FqJXeKnLPhKw55SbP2"
+MODEL_URL = "https://drive.google.com/uc?id=1NEL16kC-510kwXh7TNXwj-vuI1rxtVBY"
+VECT_URL  = "https://drive.google.com/uc?id=1YP30UYdR2YNt75FqJXeKnLPhKw55SbP2"
 
 def download_file(url, dest):
     with st.spinner(f"Downloading {os.path.basename(dest)}..."):
